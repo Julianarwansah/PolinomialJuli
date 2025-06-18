@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisis Strength Besi Baja vs Temperatur</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .input-section {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px solid #dee2e6;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .calculate-btn {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 50px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(46, 204, 113, 0.4);
+        }
+
+        .results {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid #3498db;
+        }
+
+        .result-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+
+        .equation {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.2em;
+            color: #2c3e50;
+            border: 2px solid #e9ecef;
+            overflow-x: auto;
+        }
+
+        .math-equation {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            color: #2c3e50;
+            border: 2px solid #e9ecef;
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .strength-result {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 1.3em;
+            font-weight: 600;
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .explanation {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+
+        .explanation h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .explanation p {
+            color: #856404;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .data-table th, .data-table td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .data-table th {
+            background: linear-gradient(135deg, #34495e, #2c3e50);
+            color: white;
+            font-weight: 600;
+        }
+
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-container h3 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .matrix {
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .calculation-steps {
+            background: #e8f4fd;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .calculation-step {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #3498db;
+        }
+
+        .calculation-step:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔬 Analisis Strength Besi Baja</h1>
+            <p>Perhitungan Regresi Polinomial dan Ekstrapolasi</p>
+        </div>
+
+        <div class="content">
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="valueA">🔢 Masukkan Nilai A (kgf/mm²):</label>
+                    <input type="number" id="valueA" placeholder="Contoh: 50" step="0.01">
+                </div>
+                <button class="calculate-btn" onclick="calculateResults()">
+                    🚀 Hitung Persamaan dan Strength
+                </button>
+            </div>
+
+            <div id="dataDisplay" style="display: none;">
+                <div class="result-card">
+                    <h3>📊 Data Pengamatan</h3>
+                    <div id="extrapolationWarning"></div>
+                    <table class="data-table" id="dataTable">
+                        <thead>
+                            <tr>
+                                <th>Temperatur (°C)</th>
+                                <th>Strength (kgf/mm²)</th>
+                                <th>Perhitungan Strength</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="results" id="results">
+                <div class="result-card">
+                    <h3>🎯 Jawaban Soal 1: Persamaan St = f(T)</h3>
+                    <div class="equation" id="equation"></div>
+                    <div class="math-equation" id="math-equation"></div>
+                    <div class="explanation">
+                        <h4>💡 Penjelasan Metode:</h4>
+                        <p id="methodExplanation"></p>
+                    </div>
+                    <div class="calculation-steps" id="regressionCalculation"></div>
+                </div>
+
+                <div class="result-card">
+                    <h3>🎯 Jawaban Soal 2: Strength pada 50°C</h3>
+                    <div class="strength-result" id="strengthResult"></div>
+                    <div class="explanation">
+                        <h4>🔍 Cara Perhitungan Ekstrapolasi:</h4>
+                        <p id="extrapolationExplanation"></p>
+                    </div>
+                    <div class="calculation-steps" id="extrapolationCalculation"></div>
+                </div>
+
+                <div class="result-card">
+                    <h3>📈 Analisis Statistik</h3>
+                    <div id="statisticalAnalysis"></div>
+                </div>
+
+                <div class="chart-container">
+                    <h3>📊 Visualisasi Data dan Kurva Fitting</h3>
+                    <canvas id="dataChart"></canvas>
+                </div>
+
+                <div class="result-card">
+                    <h3>🧮 Detail Perhitungan Matematis</h3>
+                    <div id="mathematicalDetails"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let chart = null;
+    let globalTemperatures = [20, 23, 25, 28, 30, 35, 40];
+    let globalStrengths = [];
+
+    function calculateResults() {
+        const A = parseFloat(document.getElementById('valueA').value);
+        
+        if (isNaN(A)) {
+            alert('⚠️ Mohon masukkan nilai A yang valid!');
+            return;
+        }
+
+        // Calculate strengths based on temperature and A value
+        globalStrengths = globalTemperatures.map(t => {
+            switch(t) {
+                case 20: return A + 1000;
+                case 23: return A + 1150;
+                case 25: return A + 1350;
+                case 28: return A + 1400;
+                case 30: return A + 1300;
+                case 35: return A + 1250;
+                case 40: return A + 950;
+                default: return 0;
+            }
+        });
+
+        // Display the data table
+        displayData(globalTemperatures, globalStrengths, A);
+
+        // Calculate polynomial regression coefficients (degree 2)
+        const coefficients = calculatePolynomialRegression(globalTemperatures, globalStrengths, 2);
+
+        // Persamaan akhir: St = a₂T² + a₁T + (a₀ + A)
+        const [a0, a1, a2] = coefficients;
+        const equation = `St = ${a2.toFixed(4)}T² + ${a1.toFixed(4)}T + (${a0.toFixed(4)} + A)`;
+        
+        // Display the regression equation
+        displayEquation(coefficients);
+        
+        // Calculate and display strength at 50°C
+        const strengthAt50 = evaluatePolynomial(coefficients, 50) + A;
+        displayStrengthResult(strengthAt50, coefficients);
+        
+        // Show statistical analysis
+        displayStatisticalAnalysis(globalTemperatures, globalStrengths, coefficients);
+        
+        // Show mathematical details
+        displayMathematicalDetails(globalTemperatures, globalStrengths, coefficients, A);
+        
+        // Create the chart
+        createChart(globalTemperatures, globalStrengths, coefficients, A);
+        
+        // Show results section
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('dataDisplay').style.display = 'block';
+    }
+
+    function displayData(temperatures, strengths, A) {
+        const tbody = document.getElementById('dataTableBody');
+        tbody.innerHTML = '';
+        
+        for (let i = 0; i < temperatures.length; i++) {
+            const row = tbody.insertRow();
+            row.insertCell(0).textContent = temperatures[i];
+            row.insertCell(1).textContent = strengths[i].toFixed(2);
+            
+            // Add calculation column
+            let calculation = "";
+            switch(temperatures[i]) {
+                case 20: calculation = `${A} + 1000 = ${strengths[i].toFixed(2)}`; break;
+                case 23: calculation = `${A} + 1150 = ${strengths[i].toFixed(2)}`; break;
+                case 25: calculation = `${A} + 1350 = ${strengths[i].toFixed(2)}`; break;
+                case 28: calculation = `${A} + 1400 = ${strengths[i].toFixed(2)}`; break;
+                case 30: calculation = `${A} + 1300 = ${strengths[i].toFixed(2)}`; break;
+                case 35: calculation = `${A} + 1250 = ${strengths[i].toFixed(2)}`; break;
+                case 40: calculation = `${A} + 950 = ${strengths[i].toFixed(2)}`; break;
+            }
+            row.insertCell(2).textContent = calculation;
+        }
+    }
+
+    function calculatePolynomialRegression(x, y, degree) {
+        const n = x.length;
+        const matrix = [];
+        const vector = [];
+        
+        // Create the normal equations matrix
+        for (let i = 0; i <= degree; i++) {
+            const row = [];
+            for (let j = 0; j <= degree; j++) {
+                let sum = 0;
+                for (let k = 0; k < n; k++) {
+                    sum += Math.pow(x[k], i + j);
+                }
+                row.push(sum);
+            }
+            matrix.push(row);
+            
+            // Create the right-hand side vector
+            let sum = 0;
+            for (let k = 0; k < n; k++) {
+                sum += y[k] * Math.pow(x[k], i);
+            }
+            vector.push(sum);
+        }
+        
+        // Solve the system using Gaussian elimination
+        return gaussianElimination(matrix, vector);
+    }
+
+    function gaussianElimination(matrix, vector) {
+        const n = matrix.length;
+        const augmented = matrix.map((row, i) => [...row, vector[i]]);
+        
+        // Forward elimination
+        for (let i = 0; i < n; i++) {
+            // Partial pivoting
+            let maxRow = i;
+            for (let k = i + 1; k < n; k++) {
+                if (Math.abs(augmented[k][i]) > Math.abs(augmented[maxRow][i])) {
+                    maxRow = k;
+                }
+            }
+            
+            // Swap rows
+            [augmented[i], augmented[maxRow]] = [augmented[maxRow], augmented[i]];
+            
+            // Eliminate current column in lower rows
+            for (let k = i + 1; k < n; k++) {
+                const factor = augmented[k][i] / augmented[i][i];
+                for (let j = i; j < n + 1; j++) {
+                    augmented[k][j] -= factor * augmented[i][j];
+                }
+            }
+        }
+        
+        // Back substitution
+        const solution = new Array(n);
+        for (let i = n - 1; i >= 0; i--) {
+            solution[i] = augmented[i][n];
+            for (let j = i + 1; j < n; j++) {
+                solution[i] -= augmented[i][j] * solution[j];
+            }
+            solution[i] /= augmented[i][i];
+        }
+        
+        return solution;
+    }
+
+    function evaluatePolynomial(coefficients, x) {
+        return coefficients.reduce((sum, coeff, i) => sum + coeff * Math.pow(x, i), 0);
+    }
+
+    function displayEquation(coefficients) {
+        const [a0, a1, a2] = coefficients;
+        let equation = `St = ${a0.toFixed(4)}`;
+        
+        // Build the equation string with proper signs
+        equation += a1 >= 0 ? ` + ${a1.toFixed(4)}T` : ` - ${Math.abs(a1).toFixed(4)}T`;
+        equation += a2 >= 0 ? ` + ${a2.toFixed(4)}T²` : ` - ${Math.abs(a2).toFixed(4)}T²`;
+        
+        // Display the equation
+        document.getElementById('equation').textContent = equation;
+        
+        // Display with MathML for better rendering
+        document.getElementById('math-equation').innerHTML = `
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+                <mi>S</mi>
+                <mi>t</mi>
+                <mo>=</mo>
+                <mn>${a0.toFixed(4)}</mn>
+                <mo>${a1 >= 0 ? '+' : '-'}</mo>
+                <mn>${Math.abs(a1).toFixed(4)}</mn>
+                <mi>T</mi>
+                <mo>${a2 >= 0 ? '+' : '-'}</mo>
+                <mn>${Math.abs(a2).toFixed(4)}</mn>
+                <msup>
+                    <mi>T</mi>
+                    <mn>2</mn>
+                </msup>
+            </math>
+        `;
+        
+        // Calculate sums for the normal equations
+        const sumT = globalTemperatures.reduce((a, b) => a + b);
+        const sumT2 = globalTemperatures.reduce((a, b) => a + b*b);
+        const sumT3 = globalTemperatures.reduce((a, b) => a + b*b*b);
+        const sumT4 = globalTemperatures.reduce((a, b) => a + b*b*b*b);
+        const sumSt = globalStrengths.reduce((a, b) => a + b);
+        const sumTSt = globalTemperatures.reduce((sum, t, i) => sum + t * globalStrengths[i], 0);
+        const sumT2St = globalTemperatures.reduce((sum, t, i) => sum + t*t * globalStrengths[i], 0);
+        
+        // Display calculation steps
+        document.getElementById('regressionCalculation').innerHTML = `
+            <h4>📝 Langkah-langkah Perhitungan Regresi:</h4>
+            <div class="calculation-step">
+                <strong>1. Hitung jumlah yang diperlukan:</strong><br>
+                n = 7 (jumlah data)<br>
+                ΣT = ${sumT}<br>
+                ΣT² = ${sumT2}<br>
+                ΣT³ = ${sumT3}<br>
+                ΣT⁴ = ${sumT4}<br>
+                ΣSt = ${sumSt.toFixed(2)}<br>
+                Σ(T·St) = ${sumTSt.toFixed(2)}<br>
+                Σ(T²·St) = ${sumT2St.toFixed(2)}
+            </div>
+            <div class="calculation-step">
+                <strong>2. Bentuk sistem persamaan normal:</strong><br>
+                7a₀ + ${sumT}a₁ + ${sumT2}a₂ = ${sumSt.toFixed(2)}<br>
+                ${sumT}a₀ + ${sumT2}a₁ + ${sumT3}a₂ = ${sumTSt.toFixed(2)}<br>
+                ${sumT2}a₀ + ${sumT3}a₁ + ${sumT4}a₂ = ${sumT2St.toFixed(2)}
+            </div>
+            <div class="calculation-step">
+                <strong>3. Solusi sistem persamaan:</strong><br>
+                a₀ = ${a0.toFixed(4)} (konstan)<br>
+                a₁ = ${a1.toFixed(4)} (koefisien linear)<br>
+                a₂ = ${a2.toFixed(4)} (koefisien kuadratik)
+            </div>
+        `;
+        
+        document.getElementById('methodExplanation').innerHTML = `
+            Menggunakan metode <strong>Regresi Polinomial Degree 2</strong> (kuadratik) karena data menunjukkan pola non-linear.
+            Persamaan umum: St = a₀ + a₁T + a₂T²<br>
+            Koefisien dihitung menggunakan metode <strong>Least Squares</strong> dengan menyelesaikan sistem persamaan normal.
+        `;
+    }
+
+    function displayStrengthResult(strength, coefficients) {
+        const [a0, a1, a2] = coefficients;
+        const strengthAt50 = evaluatePolynomial(coefficients, 50);
+        
+        // Display the result
+        document.getElementById('strengthResult').textContent = 
+            `Strength pada 50°C = ${strengthAt50.toFixed(2)} kgf/mm²`;
+        
+        // Show calculation steps
+        document.getElementById('extrapolationCalculation').innerHTML = `
+            <h4>📝 Langkah-langkah Ekstrapolasi:</h4>
+            <div class="calculation-step">
+                <strong>1. Gunakan persamaan regresi:</strong><br>
+                St = ${a0.toFixed(4)} + ${a1.toFixed(4)}T + ${a2.toFixed(4)}T²
+            </div>
+            <div class="calculation-step">
+                <strong>2. Substitusi T = 50°C:</strong><br>
+                St = ${a0.toFixed(4)} + ${a1.toFixed(4)}×50 + ${a2.toFixed(4)}×50²<br>
+                St = ${a0.toFixed(4)} + ${(a1*50).toFixed(4)} + ${(a2*2500).toFixed(4)}
+            </div>
+            <div class="calculation-step">
+                <strong>3. Hitung hasil akhir:</strong><br>
+                St = ${(a0 + a1*50 + a2*2500).toFixed(2)} kgf/mm²
+            </div>
+            <div class="warning">
+                <strong>⚠️ Catatan:</strong> Hasil ini merupakan ekstrapolasi di luar rentang data observasi (20-40°C).
+                Akurasi prediksi mungkin berkurang saat memprediksi di luar rentang data aktual.
+            </div>
+        `;
+        
+        document.getElementById('extrapolationExplanation').innerHTML = `
+            <strong>Proses ekstrapolasi:</strong> Menggunakan persamaan regresi yang diperoleh untuk memprediksi nilai di luar rentang data yang diamati (50°C).
+            <br><br>
+            <strong>Komponen persamaan:</strong>
+            <br>• Konstan: ${a0.toFixed(4)}
+            <br>• Linear: ${a1.toFixed(4)} × Temperatur
+            <br>• Kuadratik: ${a2.toFixed(4)} × Temperatur²
+        `;
+    }
+
+    function displayStatisticalAnalysis(x, y, coefficients) {
+        // Calculate mean of y values
+        const yMean = y.reduce((a, b) => a + b) / y.length;
+        let ssTotal = 0, ssRes = 0;
+        
+        // Calculate total sum of squares and residual sum of squares
+        for (let i = 0; i < x.length; i++) {
+            const yPred = evaluatePolynomial(coefficients, x[i]);
+            ssTotal += Math.pow(y[i] - yMean, 2);
+            ssRes += Math.pow(y[i] - yPred, 2);
+        }
+        
+        // Calculate R-squared and RMSE
+        const rSquared = 1 - (ssRes / ssTotal);
+        const rmse = Math.sqrt(ssRes / x.length);
+        
+        // Display statistical metrics
+        document.getElementById('statisticalAnalysis').innerHTML = `
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div style="background: #e8f5e8; padding: 15px; border-radius: 10px; text-align: center;">
+                    <h4 style="color: #27ae60;">R-squared</h4>
+                    <p style="font-size: 1.5em; font-weight: 600; color: #27ae60;">${(rSquared * 100).toFixed(2)}%</p>
+                    <small>Persentase variasi yang dijelaskan model</small>
+                </div>
+                <div style="background: #e8f4fd; padding: 15px; border-radius: 10px; text-align: center;">
+                    <h4 style="color: #3498db;">RMSE</h4>
+                    <p style="font-size: 1.5em; font-weight: 600; color: #3498db;">${rmse.toFixed(2)}</p>
+                    <small>Root Mean Square Error (kgf/mm²)</small>
+                </div>
+            </div>
+            <p style="margin-top: 15px; color: #2c3e50;">
+                <strong>Interpretasi:</strong> 
+                <br>• R² = ${(rSquared * 100).toFixed(2)}% menunjukkan bahwa model menjelaskan ${(rSquared * 100).toFixed(2)}% variasi dalam data strength.
+                <br>• RMSE = ${rmse.toFixed(2)} kgf/mm² menunjukkan rata-rata error prediksi model.
+            </p>
+        `;
+    }
+
+    function displayMathematicalDetails(x, y, coefficients, A) {
+        const [a0, a1, a2] = coefficients;
+        
+        // Create validation table
+        let validationHTML = '';
+        for (let i = 0; i < x.length; i++) {
+            const predicted = evaluatePolynomial(coefficients, x[i]);
+            const error = Math.abs(y[i] - predicted);
+            const errorPercent = (error / y[i]) * 100;
+            
+            validationHTML += `
+                <tr>
+                    <td>${x[i]}</td>
+                    <td>${y[i].toFixed(2)}</td>
+                    <td>${predicted.toFixed(2)}</td>
+                    <td>${error.toFixed(2)}</td>
+                    <td>${errorPercent.toFixed(2)}%</td>
+                </tr>
+            `;
+        }
+        
+        // Calculate R-squared for the conclusion
+        const yMean = y.reduce((a, b) => a + b) / y.length;
+        const ssTotal = y.reduce((sum, val) => sum + Math.pow(val - yMean, 2), 0);
+        const ssRes = y.reduce((sum, val, i) => sum + Math.pow(val - evaluatePolynomial(coefficients, x[i]), 2), 0);
+        const rSquared = 1 - (ssRes / ssTotal);
+        
+        document.getElementById('mathematicalDetails').innerHTML = `
+            <div class="explanation">
+                <h4>🔢 Validasi Model dengan Data Observasi:</h4>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>T (°C)</th>
+                            <th>St Observasi</th>
+                            <th>St Prediksi</th>
+                            <th>Error</th>
+                            <th>Error (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${validationHTML}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="warning">
+                <strong>🎯 Kesimpulan Analisis:</strong><br>
+                • Model kuadratik memiliki R² = ${(rSquared * 100).toFixed(2)}% menunjukkan kecocokan yang baik<br>
+                • Pola data menunjukkan peningkatan strength hingga ~28°C kemudian penurunan<br>
+                • Prediksi 50°C: ${evaluatePolynomial(coefficients, 50).toFixed(2)} kgf/mm²<br>
+                • Nilai A = ${A} berpengaruh linear terhadap semua nilai strength<br>
+                • Model valid untuk range 20-40°C, perlu hati-hati saat ekstrapolasi
+            </div>
+        `;
+    }
+
+    function createChart(x, y, coefficients, A) {
+        const ctx = document.getElementById('dataChart').getContext('2d');
+        
+        // Destroy existing chart if it exists
+        if (chart) {
+            chart.destroy();
+        }
+        
+        // Generate points for the regression curve
+        const curvePoints = [];
+        for (let t = 15; t <= 55; t += 0.5) {
+            curvePoints.push({
+                x: t,
+                y: evaluatePolynomial(coefficients, t)
+            });
+        }
+        
+        // Prepare observed data points
+        const dataPoints = x.map((t, i) => ({x: t, y: y[i]}));
+        
+        // Prepare extrapolation point (50°C)
+        const extrapolationPoint = {
+            x: 50, 
+            y: evaluatePolynomial(coefficients, 50)
+        };
+        
+        // Create new chart
+        chart = new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: [
+                    {
+                        label: 'Data Observasi',
+                        data: dataPoints,
+                        backgroundColor: '#e74c3c',
+                        borderColor: '#c0392b',
+                        borderWidth: 2,
+                        pointRadius: 8,
+                        pointHoverRadius: 10
+                    },
+                    {
+                        label: 'Kurva Regresi Kuadratik',
+                        data: curvePoints,
+                        type: 'line',
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 0,
+                        fill: false,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Ekstrapolasi (50°C)',
+                        data: [extrapolationPoint],
+                        backgroundColor: '#f39c12',
+                        borderColor: '#e67e22',
+                        borderWidth: 3,
+                        pointRadius: 10,
+                        pointHoverRadius: 12,
+                        pointStyle: 'triangle'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: `Analisis Strength Besi Baja (A = ${A})`,
+                        font: {size: 16, weight: 'bold'}
+                    },
+                    legend: {
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += context.parsed.y.toFixed(2) + ' kgf/mm²';
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Temperatur (°C)',
+                            font: {size: 14, weight: 'bold'}
+                        },
+                        grid: {
+                            display: true,
+                            color: 'rgba(0,0,0,0.1)'
+                        },
+                        min: 15,
+                        max: 55
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Strength (kgf/mm²)',
+                            font: {size: 14, weight: 'bold'}
+                        },
+                        grid: {
+                            display: true,
+                            color: 'rgba(0,0,0,0.1)'
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'point'
+                }
+            }
+        });
+    }
+    </script>
+</body>
+</html>
