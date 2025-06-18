@@ -626,7 +626,7 @@
             
             // Calculate sums for the normal equations
             const sumT = globalTemperatures.reduce((a, b) => a + b);
-            const sumT2 = globalTemperatures.reduce((a, b) => a + b*b);
+            const sumT2 = globalTemperatures.reduce((a, b) => a + b*b, 0);
             const sumT3 = globalTemperatures.reduce((a, b) => a + b*b*b);
             const sumT4 = globalTemperatures.reduce((a, b) => a + b*b*b*b);
             const sumSt = globalStrengths.reduce((a, b) => a + b);
